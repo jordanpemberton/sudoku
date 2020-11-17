@@ -24,7 +24,6 @@ class Board:
             self.board[row][col] = None
         return False
 
-
     def move_is_safe(self, row, col, tile):
         for i in range(self.size):
             if self.board[row][i] == tile:
