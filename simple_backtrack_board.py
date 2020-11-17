@@ -1,8 +1,11 @@
+import string
+
+
 class Board:
     def __init__(self):
-        self.tiles = set(['A', 'B', 'C', 'D'])
-        self.size = 4
-        self.region_size = 2
+        self.size = 9
+        self.region_size = 3
+        self.tiles = set(string.ascii_uppercase[:self.size])
         self.board = [[None for i in range(self.size)] for j in range(self.size)]
 
     def fill_board(self, row=0, col=0):
