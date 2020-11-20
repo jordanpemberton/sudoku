@@ -14,6 +14,7 @@ Tile = Union[int, Text]
 Board = List[List[Optional[Tile]]]
 import random
 import string
+import copy
 
 
 class SudokuBoard:
@@ -34,11 +35,11 @@ class SudokuBoard:
         self.zone_size = zone_size
         self.tiles = set(tiles[:self.size])     # crop to match size
         self.empty_board = [
-                            [None for i in range(self.size)]
+                            [' ' for i in range(self.size)]
                             for j in range(self.size)
                            ]
-        self.solution_board = self.fill_board(self.empty_board)
-        self.starting_board = self.make_start_board(self.solution_board, how_many_start_tiles)
+        self.solution_board = self.fill_board()
+        self.starting_board = self.make_start_board(how_many_start_tiles)
 
     def print_solution_board(self) -> Text:
         return self.print_board(self.solution_board)
@@ -84,18 +85,19 @@ class SudokuBoard:
         print(out)
         return out
 
-    def fill_board(self,
-                   board: Board
+    def fill_board(self
                   ) -> Board:
         """
         Fill the entire board with a valid solution.
         """
-        # Start by filling two opposite zones
-        board = self.fill_two_starter_zones(board)
-        # Fill the rest of the board
         filled_board = False
         while not filled_board:
+            board = copy.deepcopy(self.empty_board)
+            # Start by filling two opposite zones
+            board = self.fill_two_starter_zones(board)
+            # Fill (solve) the rest of the board
             filled_board = self.solve_board(board)
+        # Board is solvable and filled
         return filled_board
 
     def fill_two_starter_zones(self,
@@ -120,18 +122,33 @@ class SudokuBoard:
                           start: int,
                           end: int
                          ) -> Board:
-        """ Fill one of the two starter corner zones. """
-        tiles = self.tiles.copy()
+        """
+        Fill one of the two starter corner zones.
+        """
+        # Make a list of tiles, random shuffle
+        tiles = list(copy.copy(self.tiles))
+        random.shuffle(tiles)
+        # Enter tiles into zone:
         for r in range(start, end):
             for c in range(start, end):
                 board[r][c] = tiles.pop()
         return board
 
     def solve_board(self,
-                          board: Board,
-                          row: int =0,
-                          col: int =0
-                         ) -> Union[Board, bool]:
+                    board: Board
+                   ) -> Board:
+        """
+        Make a copy of the board and try
+        to solve /fill.
+        """
+        board_copy = copy.deepcopy(board)
+        return self.recurs_solve_board(board_copy)
+
+    def recurs_solve_board(self,
+                    board: Board,
+                    row: int =0,
+                    col: int =0
+                   ) -> Union[Board, bool]:
         """
         Recursive function to solve /fill board.
         """
@@ -144,18 +161,18 @@ class SudokuBoard:
             row += 1
             col = 0
         # If cell already filled
-        if board[row][col] != None:
-            return self.solve_board(board, row, col + 1)
+        if board[row][col] != ' ':
+            return self.recurs_solve_board(board, row, col + 1)
         # Choose a tile, check if safe, insert tile
         for tile in self.tiles:
             if self.move_is_safe(board, row, col, tile):
                 board[row][col] = tile
                 # Recursively call fill func until all filled
-                if self.solve_board(board, row, col + 1):
+                if self.recurs_solve_board(board, row, col + 1):
                     # return True
                     return board
             # If move invalid continue
-            board[row][col] = None
+            board[row][col] = ' '
         # If no more options, return False
         return False
 
@@ -187,15 +204,32 @@ class SudokuBoard:
         return True
 
     def make_start_board(self,
-                         board,
                          how_many_start_tiles: int
                         ) -> Board:
         """
         Remove tiles to make a starting puzzle board.
         Check if solvable.
         """
-        tiles_remaining = self.size * self.size
-        # while tiles_remaining >=
+        solvable = False
+        while not solvable:
+            # Start with solution board copy
+            board = copy.deepcopy(self.solution_board)
+            n = self.size * self.size
+            # Make list of indexes, random shuffle
+            indexes_remaining = [i for i in range(n)]
+            random.shuffle(indexes_remaining)
+            # Count how many tiles remaining
+            remaining_tile_count = n
+            # Remove tiles until target num remaining
+            while remaining_tile_count >= how_many_start_tiles:
+                i = indexes_remaining.pop()
+                row = i // self.size
+                col = i % self.size
+                board[row][col] = ' '
+                remaining_tile_count -= 1
+
+            solvable = self.solve_board(board)
+        # Board is solvable
         return board
 
 class Sudoku:
@@ -212,3 +246,4 @@ class Sudoku:
 if __name__ == '__main__':
     game = Sudoku()
     game.board.print_solution_board()
+    game.board.print_starting_board()
