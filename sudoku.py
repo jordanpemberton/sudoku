@@ -26,6 +26,7 @@ class Sudoku:
                  size: int =9
                 ) -> None:
         """
+        Call new game to initiate, start a new game.
         """
         self.new_game(how_many_start_tiles, tile_type, size)
 
@@ -74,6 +75,8 @@ class Sudoku:
         self.playing_board_empties = set([i for i in range(size)])
         self.starting_board = self.make_start_board(how_many_start_tiles)
         self.playing_board = copy.deepcopy(self.starting_board)
+        # Start playing!
+        self.play_game()
 
     def make_tile_set(self, tile_type, size: int) -> Set[Text]:
         # Using alpha letters
@@ -321,8 +324,10 @@ class Sudoku:
         # Start new game...
         print('New game? (Y/N)')
         start_new_game = input()
-        if start_new_game.upper() == 'Y':           # This isn't working **
-            self.new_game(size=self.size, how_many_start_tiles=self.how_many_start_tiles, tile_type=self.tile_type)
+        if start_new_game.upper() == 'Y':
+            self.new_game(size=self.size,
+                          how_many_start_tiles=self.how_many_start_tiles,
+                          tile_type=self.tile_type)
 
     def get_row_col_input(self) -> Tuple[int, int]:
         row = None
@@ -397,4 +402,3 @@ if __name__ == '__main__':
                   size =4,
                   how_many_start_tiles =14
                  )
-    game.play_game()
