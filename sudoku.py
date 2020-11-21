@@ -1,41 +1,51 @@
 # (1) Generate a full, solved board (save solution board)
 #       (a) Start by filling two opposite corner zones with shuffles tiles
 #       (b) Recursively fill the rest of the board, returning False if not valid
-# (2) Remove tiles until you have a puzzle board (save as puzzle board)
+# (2) Remove tiles until you have a puzzle board (save as puzzle starting board)
 # (3) Validate that the board is solveable (solve)
-# (4) Let player play by inputting coords and tile vals
-#       (a) validate if moves are valid (empty square)
+# (4) Play! Let player input coords and tile vals
+#       (a) validate if moves are valid (empty square or edit-able)
 #       (b) check if board is full
-#       (c) once full, compare to solution board
+#       (c) once full, compare to solution to check for win
 
 
 from typing import Dict, List, Optional, Set, Text, Tuple, Union
-Tile = Union[int, Text]
-Board = List[List[Optional[Tile]]]
+Board = List[List[Optional[Text]]]
 import random
 import string
 import copy
 
 
-class SudokuBoard:
+class Sudoku:
     """
     Class representing a Sudoku Board.
     """
     def __init__(self,
                  how_many_start_tiles: int =17,     # must be >=17 if 9x9
                  tile_type: Text ='numeric',
-                 size: int =9,
-                 zone_size: int =3
+                 size: int =9
                 ) -> None:
         """
         """
-        if zone_size > size:
-            return
-        if how_many_start_tiles >= (size * size):
-            return
+        valid_sizes = {
+                    #    4:  2,             # this one is causing problems...
+                       9:  3,
+                       16: 4,               # slow but seems to work?
+                    #    25: 5                # ...oof, we may never know
+                      }
+
+        if size not in valid_sizes:
+            size = 9
+
+        if (how_many_start_tiles >= (size * size) or
+            how_many_start_tiles < (2 * size - 1)):
+            print('invalid start count')
+            how_many_start_tiles = 2 * size - 1
 
         self.size = size
-        self.zone_size = zone_size
+        self.zone_size = valid_sizes[size]
+        self.how_many_start_tiles = how_many_start_tiles
+
         self.tile_type = tile_type
         self.tiles = self.make_tile_set(tile_type, size)
 
@@ -43,19 +53,20 @@ class SudokuBoard:
                             [None for i in range(size)]
                             for j in range(size)
                            ]
+
         self.solution_board = self.fill_board()
         self.playing_board_empties = set([i for i in range(size)])
         self.starting_board = self.make_start_board(how_many_start_tiles)
         self.playing_board = copy.deepcopy(self.starting_board)
         self.temp_board = None
 
-    def make_tile_set(self, tile_type, size: int) -> Set[Tile]:
+    def make_tile_set(self, tile_type, size: int) -> Set[Text]:
         # Using alpha letters
         if tile_type == 'alpha':
             tiles_itr = string.ascii_uppercase
         # Using numerals
         else:
-            tiles_itr = [i for i in range(1, size + 1)]
+            tiles_itr = [str(i) for i in range(1, size + 1)]
         # Crop to match size, return set
         return set(tiles_itr[:size])
 
@@ -132,12 +143,13 @@ class SudokuBoard:
         Start by filling two corner zones
         (with no shared rows or columns).
         """
-        # Zone 1, top left
+        # Top left zone
         start = 0
-        end = start + self.zone_size
+        end = self.zone_size
         board = self.fill_starter_zone(board, start, end)
-        # Zone 9, bottom right
-        start = self.size - self.zone_size          # 9 - 3 = 6
+
+        # Bottom right zone
+        start = self.size - self.zone_size
         end = self.size
         board = self.fill_starter_zone(board, start, end)
         return board
@@ -151,7 +163,7 @@ class SudokuBoard:
         Fill one of the two starter corner zones.
         """
         # Make a list of tiles, random shuffle
-        tiles = list(copy.copy(self.tiles))
+        tiles = list(copy.deepcopy(self.tiles))
         random.shuffle(tiles)
         # Enter tiles into zone:
         for r in range(start, end):
@@ -207,7 +219,7 @@ class SudokuBoard:
                              board: Board,
                              row: int,
                              col: int,
-                             entry: Tile =None
+                             entry: Text =None
                             ) -> bool:
         """
         Check if entry is valid
@@ -251,7 +263,7 @@ class SudokuBoard:
             # Count how many tiles remaining
             remaining_tile_count = n
             # Remove tiles until target num remaining
-            while remaining_tile_count >= how_many_start_tiles:
+            while remaining_tile_count > how_many_start_tiles:
                 i = indexes_remaining.pop()
                 row = i // self.size
                 col = i % self.size
@@ -264,11 +276,12 @@ class SudokuBoard:
         return board
 
     def is_game_solved(self) -> bool:
-        for row in self.playing_board:
-            for col in row:
-                if not self.check_if_valid_entry(self.playing_board, row, col):
-                    return False
-        return True
+        # for row in self.playing_board:
+        #     for col in row:
+        #         if not self.check_if_valid_entry(self.playing_board, row, col):
+        #             return False
+        # return True
+        return self.playing_board == self.solution_board
 
     def play_game(self):
         while self.playing_board_empties:
@@ -297,14 +310,15 @@ class SudokuBoard:
             try:
                 col = int(col)
             except:
-                print('that is not a number')
+                print('    That is not a number')
         return row, col
 
-    def get_tile_input(self) -> Tile:
+    def get_tile_input(self) -> Text:
         print('Please chose a value from these available values:')
         print(self.tiles)
         tile = input()
         while tile.upper() not in self.tiles:
+            print('    Invalid choice, try again')
             tile = input()
         return tile.upper()
 
@@ -312,14 +326,14 @@ class SudokuBoard:
         row, col = self.get_row_col_input()
         # If a starting index
         while self.starting_board[row][col] is not None:
-            print('That cell cannot be edited. Please try again.')
+            print('    That cell cannot be edited. Please try again.')
             row, col  = self.get_row_col_input()
         # If editing a cell
         if self.playing_board[row][col] is not None:
             print('Would you like to edit this cell? Y/N')
             to_edit = input()
             while to_edit.upper() != 'N' and to_edit.upper() != 'Y':
-                print('Eh???')
+                print('    Eh???')
                 to_edit = input()
             if to_edit.upper() == 'N':
                 row, col = self.get_row_col_input()
@@ -329,7 +343,7 @@ class SudokuBoard:
     def make_move(self,
                   row: int,
                   col: int,
-                  tile: Tile
+                  tile: Text
                  ) -> None:
         # Enter the selection onto board
         self.playing_board[row][col] = tile
@@ -339,6 +353,8 @@ class SudokuBoard:
 
 
 if __name__ == '__main__':
-    game = SudokuBoard()
+    game = Sudoku(tile_type='alpha',
+                  size =25
+                 )
     # game.print_solution_board()
     game.play_game()
