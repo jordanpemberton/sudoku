@@ -4,7 +4,7 @@ import string
 class Board:
     def __init__(self):
         self.size = 9
-        self.region_size = 3
+        self.zone_size = 3
         self.tiles = set(string.ascii_uppercase[:self.size])
         self.board = [[None for i in range(self.size)] for j in range(self.size)]
 
@@ -32,17 +32,57 @@ class Board:
             if self.board[i][col] == tile:
                 return False
         # For checking regions:
-        start_row = row - row % self.region_size
-        start_col = col - col % self.region_size
-        for i in range(self.region_size):
-            for j in range(self.region_size):
+        start_row = row - row % self.zone_size
+        start_col = col - col % self.zone_size
+        for i in range(self.zone_size):
+            for j in range(self.zone_size):
                 if self.board[i + start_row][j + start_col] == tile:
                     return False
         return True
+
+    def print_board(self):
+        """ To display a board """
+        thick_vert = '|'
+        thin_vert =  ':'
+        thick_horz = '-----'
+        thin_horz =  ' . . '
+
+        out = ''
+        for i in range(self.size):
+            for j in range(self.size):
+                if j % self.zone_size == 0:
+                    out += thick_vert
+                else:
+                    out += thin_vert
+                if i % self.zone_size == 0:
+                    out += thick_horz
+                else:
+                    out += thin_horz
+            out += thick_vert + '\n'
+            for j in range(self.size):
+                if j % self.zone_size == 0:
+                    out += thick_vert + '  '
+                else:
+                    out += thin_vert + '  '
+                if self.board[i][j] is not None:
+                    out += self.board[i][j]
+                else:
+                    out += ' '
+                out += '  '
+            out += thick_vert + '\n'
+        for j in range(self.size):
+            if j % self.zone_size == 0:
+                out += thick_vert
+            else:
+                out += thin_vert
+            out += thick_horz
+        out += thick_vert + '\n'
+        print(out)
+        return out
 
 
 if __name__ == '__main__':
     game = Board()
     # print(game.options)
-    print(game.fill_board())
-    print(game.board)
+    game.fill_board()
+    game.print_board()
