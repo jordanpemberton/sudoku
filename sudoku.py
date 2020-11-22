@@ -8,6 +8,8 @@
 #       (b) check if board is full
 #       (c) once full, compare to solution to check for win
 
+# size 16 might take a while...
+# size 25 takes forever 
 
 from typing import Dict, List, Optional, Set, Text, Tuple, Union
 Board = List[List[Optional[Text]]]
@@ -36,7 +38,7 @@ class Sudoku:
                                      4 : 4,
                                      9 : 17,
                                      16: 54
-                                    # 25: 132
+                                     # 25: 132
                                     }
         self.new_game()
 
