@@ -20,73 +20,131 @@ class Sudoku:
     """
     Class representing a Sudoku Board.
     """
-    def __init__(self,
-                 how_many_start_tiles: int =None,     # must be >=17 if 9x9
-                 tile_type: Text ='numeric',
-                 size: int =9
-                ) -> None:
+    def __init__(self) -> None:
         """
         Call new game to initiate, start a new game.
         """
-        self.new_game(how_many_start_tiles, tile_type, size)
+        self.default_tile_set = 'N'
+        self.default_size = 9
+        self.valid_sizes = {
+                            4:  2,
+                            9:  3,
+                            16: 4,
+                            25: 5
+                           }
+        self.default_start_counts = {
+                                     4 : 7,
+                                     9 : 17,
+                                     16: 31,
+                                     25: 49
+                                    }
+        self.new_game()
 
-    def new_game(self,
-                 how_many_start_tiles: int =None,
-                 tile_type: Text ='numeric',
-                 size: int =9
-                ) -> None:
-        """
-        """
-        valid_sizes = {
-                       4:  2,
-                       9:  3,
-                       16: 4,
-                       # 25: 5
-                      }
-        default_start_count = {
-                               4 : 7,
-                               9 : 17,
-                               16: 31,
-                               # 25, 49
-                              }
+    def customize_new_game(self) -> None:
+        print('Would you like to customize your new game?  (Y/N)')
+        do_customize = input()
+        while do_customize.upper() != 'Y' and do_customize.upper() != 'N':
+            print('     Please enter \'Y\' for yes or \'N\' for no:')
+            do_customize = input()
+        if do_customize.upper() == 'Y':
+            self.get_new_game_input()
 
-        if size not in valid_sizes:
-            size = 9
+    def get_new_game_input(self) -> None:
+        # Board size
+        self.get_board_size_input()
+        # How many starting tiles
+        self.get_how_many_starting_tiles_input()
+        # Tile set
+        self.get_tile_set_input()
 
-        if (how_many_start_tiles is None or
-            how_many_start_tiles >= (size * size) or
-            how_many_start_tiles < (2 * size - 1)):
-            how_many_start_tiles = default_start_count[size]
-            # print('Start count not given or invalid, start count = ', how_many_start_tiles)
-
+    def get_board_size_input(self) -> None:
+        valid_size = False
+        sizes_str = '  '.join(str(key) for key in self.valid_sizes.keys())
+        print('What size board would you like?')
+        while not valid_size:
+            print('Please choose from these available sizes:')
+            print(sizes_str)
+            size = input()
+            try:
+                size = int(size)
+            except:
+                pass
+            if size in self.valid_sizes:
+                valid_size = True
         self.size = size
-        self.zone_size = valid_sizes[size]
+
+    def get_how_many_starting_tiles_input(self) -> None:
+        valid_starting_num = False
+        max_start_tiles = self.size * self.size
+        min_start_tiles = 2 * self.size - 2
+        print('How many starting tiles would you like?')
+        while not valid_starting_num:
+            print('Number of starting tiles must be less than',
+                  max_start_tiles,
+                  'and more than',
+                  min_start_tiles)
+            how_many_start_tiles = input()
+            try:
+                how_many_start_tiles = int(how_many_start_tiles)
+            except:
+                pass
+            if (how_many_start_tiles > min_start_tiles and
+                how_many_start_tiles < max_start_tiles):
+                valid_starting_num = True
         self.how_many_start_tiles = how_many_start_tiles
 
-        self.tile_type = tile_type
-        self.tiles = self.make_tile_set(tile_type, size)
+    def get_tile_set_input(self) -> None:
+        valid_tile_set = False
+        print('Would you like to use number or letter tiles?')
+        while not valid_tile_set:
+            print('Enter \'N\' for numbers or \'L\' for letters:')
+            tile_set = input()
+            if tile_set.upper() == 'N' or tile_set.upper() == 'L':
+                valid_tile_set = True
+        self.tile_set = tile_set.upper()
 
+    def new_game(self) -> None:
+        """
+        """
+        # Start with default values
+        self.size = self.default_size
+        self.how_many_start_tiles = self.default_start_counts[self.size]
+        self.tile_set = self.default_tile_set
+        # Allow player to change defaults
+        self.customize_new_game()
+        # Make your set of tiles
+        self.tiles = self.make_tile_set()
+        # Determine correct zone size
+        self.zone_size = self.valid_sizes[self.size]
+
+        # Make an empty board
         self.empty_board = [
-                            [None for i in range(size)]
-                            for j in range(size)
+                            [None for i in range(self.size)]
+                            for j in range(self.size)
                            ]
+        # Empty cells on playing board (determined when starting board is made)
+        self.playing_board_empties = set([i for i in range(self.size)])
+        # Temp board used for solving
         self.temp_board = copy.deepcopy(self.empty_board)
+        # Answer board
         self.solution_board = self.fill_board()
-        self.playing_board_empties = set([i for i in range(size)])
-        self.starting_board = self.make_start_board(how_many_start_tiles)
+        # Starting puzzle board
+        self.starting_board = self.make_start_board(self.how_many_start_tiles)
+        # Playing board
         self.playing_board = copy.deepcopy(self.starting_board)
+
         # Start playing!
         self.play_game()
 
-    def make_tile_set(self, tile_type, size: int) -> Set[Text]:
+    def make_tile_set(self) -> List[Text]:
         # Using alpha letters
-        if tile_type == 'alpha':
+        if self.tile_set.upper() == 'L':
             tiles_itr = string.ascii_uppercase
-        # Using numerals
+        # Using numerals (default)
         else:
-            tiles_itr = [str(i) for i in range(1, size + 1)]
+            tiles_itr = [str(i) for i in range(1, self.size + 1)]
         # Crop to match size, return set
-        return set(tiles_itr[:size])
+        return list(tiles_itr[:self.size])
 
     def print_solution_board(self) -> Text:
         return self.print_board(self.solution_board)
@@ -252,18 +310,21 @@ class Sudoku:
         # Check column
         for c in range(self.size):
             if self.temp_board[row][c] == entry:
-                return False
+                if c != col:
+                    return False
         # Check row
         for r in range(self.size):
             if self.temp_board[r][col] == entry:
-                return False
+                if r != row:
+                    return False
         # Check zone
         start_row = row - row % self.zone_size
         start_col = col - col % self.zone_size
         for r in range(start_row, start_row + self.zone_size):
             for c in range(start_col, start_col + self.zone_size):
                 if self.temp_board[r][c] == entry:
-                    return False
+                    if (r, c) != (row, col):
+                        return False
         return True
 
     def make_start_board(self,
@@ -301,33 +362,39 @@ class Sudoku:
 
     def is_game_solved(self) -> bool:
         # If there are multiple solutions, comparing to solution
-        # board won't work, so need to check using solve func
-        # return self.playing_board == self.solution_board
+        # board won't work, so need to check for solution
         self.temp_board = copy.deepcopy(self.playing_board)
-        return self.solve_board()
+        self.print_temp_board()
+        for index in range(self.size * self.size):
+            row = index // self.size
+            col = index % self.size
+            if not self.check_if_valid_entry(row, col):
+                return False
+        return True
 
     def play_game(self):
         solved = False
         while not solved:
+            # Print the playing board
+            self.print_playing_board()
+            # If board is filled
             if not self.playing_board_empties:
-                print('hmm, not quite right...')
+                # Check if solved
+                solved = self.is_game_solved()
+                # If not solved, continue playing
+                if not solved:
+                    print('     Hmmm, that\'s not quite right...')
+            # Get the next move:
+            if not solved:
                 self.take_move()
-            while self.playing_board_empties:
-                # Print the playing board
-                self.print_playing_board()
-                # Take /make a move
-                self.take_move()
-            # All cells have been filled, check if solved:
-            solved = self.is_game_solved
+
         # Game solved!
         print('YOU WIN!!')
         # Start new game...
         print('New game? (Y/N)')
         start_new_game = input()
         if start_new_game.upper() == 'Y':
-            self.new_game(size=self.size,
-                          how_many_start_tiles=self.how_many_start_tiles,
-                          tile_type=self.tile_type)
+            self.new_game()
 
     def get_row_col_input(self) -> Tuple[int, int]:
         row = None
@@ -353,11 +420,11 @@ class Sudoku:
         return row, col
 
     def get_tile_input(self) -> Text:
-        print('Please chose a value from these available values:')
-        print(self.tiles)
+        print('Please choose from these available values:')
+        print('     ' + '  '.join(tile for tile in self.tiles))
         tile = input()
         while tile.upper() not in self.tiles:
-            print('    Invalid choice, try again')
+            print('    Invalid choice, please try again')
             tile = input()
         return tile.upper()
 
@@ -369,7 +436,8 @@ class Sudoku:
             row, col  = self.get_row_col_input()
         # If editing a cell
         while self.playing_board[row][col] is not None:
-            print('Would you like to edit this cell? Y/N')
+            print('Would you like to edit cell (' + str(row) +
+                  ', ' + str(col) + ')?  Y/N')
             to_edit = input()
             while to_edit.upper() != 'N' and to_edit.upper() != 'Y':
                 print('    Eh???')
@@ -398,7 +466,4 @@ class Sudoku:
 
 
 if __name__ == '__main__':
-    game = Sudoku(tile_type='alpha',
-                  size =4,
-                  how_many_start_tiles =14
-                 )
+    game = Sudoku()
