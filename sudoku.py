@@ -29,14 +29,14 @@ class Sudoku:
         self.valid_sizes = {
                             4:  2,
                             9:  3,
-                            16: 4,
-                            25: 5
+                            16: 4
+                            # 25: 5
                            }
         self.default_start_counts = {
-                                     4 : 7,
+                                     4 : 4,
                                      9 : 17,
-                                     16: 31,
-                                     25: 49
+                                     16: 54
+                                    # 25: 132
                                     }
         self.new_game()
 
@@ -44,7 +44,7 @@ class Sudoku:
         print('Would you like to customize your new game?  (Y/N)')
         do_customize = input()
         while do_customize.upper() != 'Y' and do_customize.upper() != 'N':
-            print('     Please enter \'Y\' for yes or \'N\' for no:')
+            print('     Please enter \'Y\' for yes or \'N\' for no.')
             do_customize = input()
         if do_customize.upper() == 'Y':
             self.get_new_game_input()
@@ -76,13 +76,15 @@ class Sudoku:
     def get_how_many_starting_tiles_input(self) -> None:
         valid_starting_num = False
         max_start_tiles = self.size * self.size
-        min_start_tiles = 2 * self.size - 2
+        min_start_tiles = self.default_start_counts[self.size] - 1
         print('How many starting tiles would you like?')
         while not valid_starting_num:
-            print('Number of starting tiles must be less than',
-                  max_start_tiles,
-                  'and more than',
-                  min_start_tiles)
+            print('Number of starting tiles must be less than ' +
+                  str(max_start_tiles) +
+                  ' and more than ' +
+                  str(min_start_tiles) +
+                  '.'
+                 )
             how_many_start_tiles = input()
             try:
                 how_many_start_tiles = int(how_many_start_tiles)
@@ -166,6 +168,8 @@ class Sudoku:
         thin_vert =  ':'
         thick_horz = '-----'
         thin_horz =  ' . . '
+        starting_tile_emp_left = '['
+        starting_tile_emp_right = ']'
 
         out = '     '
         # Column number labels
@@ -188,19 +192,33 @@ class Sudoku:
             out += thick_vert + '\n'
 
             # Row number label
-            out += '  ' + str(row) + '  '
+            if row > 9:
+                out += ' ' + str(row) + '  '
+            else:
+                out += '  ' + str(row) + '  '
+
             # Row contents
             for c in range(self.size):
                 if c % self.zone_size == 0:
-                    out += thick_vert + '  '
+                    out += thick_vert
                 else:
-                    out += thin_vert + '  '
+                    out += thin_vert
                 # Cell contents
                 if board[row][c] is not None:
-                    out += str(board[row][c])
+                    tile = board[row][c]
+                    # If a starting tile
+                    if self.starting_board[row][c] is not None:
+                        out += (' ' +
+                                starting_tile_emp_left +
+                                tile +
+                                starting_tile_emp_right
+                               )
+                    else:
+                        out += '  ' + tile + ' '
+                    if len(tile) == 1:
+                        out += ' '
                 else:
-                    out += ' '
-                out += '  '
+                    out += '     '
             out += thick_vert + '\n'
         # Bottom border
         out += '     '
@@ -373,6 +391,9 @@ class Sudoku:
         return True
 
     def play_game(self):
+        # print('New game!')
+        # print('Enter \'RESET\' at any point to reset game to starting state.')
+        # how would make reset opt?
         solved = False
         while not solved:
             # Print the playing board
@@ -391,7 +412,7 @@ class Sudoku:
         # Game solved!
         print('YOU WIN!!')
         # Start new game...
-        print('New game? (Y/N)')
+        print('New game?  (Y/N)')
         start_new_game = input()
         if start_new_game.upper() == 'Y':
             self.new_game()
@@ -405,18 +426,18 @@ class Sudoku:
             try:
                 row = int(row)
             except:
-                print('    That is not a number')
+                print('    That is not a number.')
             if row not in range(self.size):
-                print('    Out of range')
+                print('    Out of range.')
         while not isinstance(col, int) or not col in range(self.size):
             print('Please enter a column:   ', end='')
             col = input()
             try:
                 col = int(col)
             except:
-                print('    That is not a number')
+                print('    That is not a number.')
             if col not in range(self.size):
-                print('    Out of range')
+                print('    Out of range.')
         return row, col
 
     def get_tile_input(self) -> Text:
@@ -424,7 +445,7 @@ class Sudoku:
         print('     ' + '  '.join(tile for tile in self.tiles))
         tile = input()
         while tile.upper() not in self.tiles:
-            print('    Invalid choice, please try again')
+            print('    Invalid choice, please try again.')
             tile = input()
         return tile.upper()
 
@@ -432,7 +453,7 @@ class Sudoku:
         row, col = self.get_row_col_input()
         # If a starting index
         while self.starting_board[row][col] is not None:
-            print('    That cell cannot be edited. Please try again.')
+            print('    That cell cannot be edited. Please choose a different cell.')
             row, col  = self.get_row_col_input()
         # If editing a cell
         while self.playing_board[row][col] is not None:
