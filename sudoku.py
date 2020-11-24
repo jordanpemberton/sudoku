@@ -9,7 +9,7 @@
 #       (c) once full, compare to solution to check for win
 
 # size 16 might take a while...
-# size 25 takes forever 
+# size 25 takes forever
 
 from typing import Dict, List, Optional, Set, Text, Tuple, Union
 Board = List[List[Optional[Text]]]
@@ -126,12 +126,15 @@ class Sudoku:
                             [None for i in range(self.size)]
                             for j in range(self.size)
                            ]
+
         # Empty cells on playing board (determined when starting board is made)
         self.playing_board_empties = set([i for i in range(self.size)])
+
         # Temp board used for solving
         self.temp_board = copy.deepcopy(self.empty_board)
         # Answer board
         self.solution_board = self.fill_board()
+
         # Starting puzzle board
         self.starting_board = self.make_start_board(self.how_many_start_tiles)
         # Playing board
@@ -209,7 +212,7 @@ class Sudoku:
                 if board[row][c] is not None:
                     tile = board[row][c]
                     # If a starting tile
-                    if self.starting_board[row][c] is not None:
+                    if self.solution_board[row][c] is not None:
                         out += (' ' +
                                 starting_tile_emp_left +
                                 tile +
@@ -234,6 +237,52 @@ class Sudoku:
         print(out)
         return out
 
+    def get_zone_order(self) -> List[Tuple[int, int]]:
+        """
+        Determine the order in which to search zones.
+        """
+        order = []
+        end = self.zone_size
+        mid = self.zone_size // 2 + 1
+        for i in range(mid):
+            order.append((i, i))
+            if end - i - 1 != i:
+                order.append((end - i - 1, end - i - 1))
+            for j in range(i):
+                order.append((i, j))
+                order.append((j, i))
+                order.append((end - i - 1, end - j - 1))
+                order.append((end - j - 1, end - i - 1))
+
+        return order
+
+    def fill_board_by_zones(self) -> bool:
+        """
+        Attempting to fill the board in a 'smarter'
+        way, but not quite working.
+        """
+        # (filling zones in linear order:)
+        # for z_row in range(self.zone_size):
+        #     for z_col in range(self.zone_size):
+        #       ...
+
+        # Solve zones working out from starting corners,
+        # along the outer sides and across the corner-corner diagonal:
+        zone_order = self.get_zone_order()
+        print(zone_order)
+
+        for z_row, z_col in zone_order:
+            start_row = z_row * self.zone_size
+            end_row = start_row + self.zone_size
+            start_col = z_col * self.zone_size
+            end_col = start_col + self.zone_size
+            zone_solved = self.solve_zone(start_row, end_row, start_col, end_col, start_row, start_col)
+
+            if not zone_solved:
+                break
+
+        return zone_solved
+
     def fill_board(self) -> Board:
         """
         Fill the entire board with a valid solution.
@@ -243,10 +292,15 @@ class Sudoku:
         while not solvable:
             # Copy the empty board
             self.temp_board = copy.deepcopy(self.empty_board)
+
             # Start by filling two opposite zones
             self.fill_two_starter_zones()
+
+            # (attempting to fill by zone...)
+
             # Fill (solve) the rest of the board
             solvable = self.solve_board()
+
         # Board is solvable and filled
         return self.temp_board
 
@@ -282,6 +336,46 @@ class Sudoku:
             for c in range(start, end):
                 # Fill in zone on temp board
                 self.temp_board[r][c] = tiles.pop()
+
+    def solve_zone(self,
+                   start_row: int,
+                   end_row: int,
+                   start_col: int,
+                   end_col: int,
+                   row: int,
+                   col: int,
+                  ) -> bool:
+        """
+        Solve a single zone, return True if solvable,
+        else return False.
+        Note: Zone range is not inclusive, and end_row
+        and end_col not included in the current zone.
+        Uses self.temp_board.
+        """
+        # If end of row reached:
+        if col == end_col:
+            # Next row:
+            row += 1
+            col = start_col
+            # If end of row reached:
+            if row == end_row:
+                return True
+
+        # If cell already filled:
+        if self.temp_board[row][col] is not None:
+            return self.solve_zone(start_row, end_row, start_col, end_col, row, col + 1)
+
+        # Choose a tile, check if safe, insert tile if safe
+        for tile in self.tiles:
+            if self.check_if_valid_entry(row, col, tile):
+                self.temp_board[row][col] = tile
+                # Recursively fill zone
+                if self.solve_zone(start_row, end_row, start_col, end_col, row, col + 1):
+                    return True
+            # If tile ivalid continue
+            self.temp_board[row][col] = None
+
+        return False
 
     def solve_board(self,
                     row: int =0,
