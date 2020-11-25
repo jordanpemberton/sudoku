@@ -1,15 +1,14 @@
+# (0) Allow user customization!
 # (1) Generate a full, solved board (save solution board)
 #       (a) Start by filling two opposite corner zones with shuffles tiles
 #       (b) Recursively fill the rest of the board, returning False if not valid
 # (2) Remove tiles until you have a puzzle board (save as puzzle starting board)
-# (3) Validate that the board is solveable (solve)
-# (4) Play! Let player input coords and tile vals
-#       (a) validate if moves are valid (empty square or edit-able)
-#       (b) check if board is full
-#       (c) once full, compare to solution to check for win
+# (3) Validate that the board is actually solveable (solve)
+# (4) Play! Let player input coords and tile vals to make moves
+#       (a) Verify if moves are valid (empty square or edit-able)
+#       (b) Check if board is full
+#       (c) Once full, check if board is solved (all entries are valid)
 
-# size 16 might take a while...
-# size 25 takes forever
 
 from typing import Dict, List, Optional, Set, Text, Tuple, Union
 Board = List[List[Optional[Text]]]
@@ -24,7 +23,8 @@ class Sudoku:
     """
     def __init__(self) -> None:
         """
-        Call new game to initiate, start a new game.
+        Set defaults, and then call new_game()
+        to customize, initiate, and start new game.
         """
         self.default_tile_set = 'N'
         self.default_size = 9
@@ -32,17 +32,21 @@ class Sudoku:
                             4:  2,
                             9:  3,
                             16: 4
-                            # 25: 5
+                            # 25: 5         # takes too long
                            }
         self.default_start_counts = {
-                                     4 : 4,
-                                     9 : 17,
-                                     16: 54
-                                     # 25: 132
+                                     4 : 4,     # known min start
+                                     9 : 17,    # known min start
+                                     16: 85     # unknown min start, smaller nums take longer
+                                     # 25: 132  # unknown min start
                                     }
         self.new_game()
 
     def customize_new_game(self) -> None:
+        """
+        Ask user if they'd like to customize new game.
+        If yes, call get_new_game_input() to collect input.
+        """
         print('Would you like to customize your new game?  (Y/N)')
         do_customize = input()
         while do_customize.upper() != 'Y' and do_customize.upper() != 'N':
@@ -52,6 +56,9 @@ class Sudoku:
             self.get_new_game_input()
 
     def get_new_game_input(self) -> None:
+        """
+        Collect new game customization input from user.
+        """
         # Board size
         self.get_board_size_input()
         # How many starting tiles
@@ -60,6 +67,10 @@ class Sudoku:
         self.get_tile_set_input()
 
     def get_board_size_input(self) -> None:
+        """
+        Get board size for new game from user input,
+        and use to overwrite self.size.
+        """
         valid_size = False
         sizes_str = '  '.join(str(key) for key in self.valid_sizes.keys())
         print('What size board would you like?')
@@ -76,6 +87,10 @@ class Sudoku:
         self.size = size
 
     def get_how_many_starting_tiles_input(self) -> None:
+        """
+        Get number of starting tiles for new game from user
+        input, and use to overwrite self.how_many_start_tiles.
+        """
         valid_starting_num = False
         max_start_tiles = self.size * self.size
         min_start_tiles = self.default_start_counts[self.size] - 1
@@ -87,6 +102,9 @@ class Sudoku:
                   str(min_start_tiles) +
                   '.'
                  )
+            if self.size == 16:
+                print('     Warning:  16 x 16 boards might be (very) slow to generate, but')
+                print('     boards with more starting tiles (>~130) should generate faster.')
             how_many_start_tiles = input()
             try:
                 how_many_start_tiles = int(how_many_start_tiles)
@@ -98,6 +116,10 @@ class Sudoku:
         self.how_many_start_tiles = how_many_start_tiles
 
     def get_tile_set_input(self) -> None:
+        """
+        Get which tile set to use in new game ('N' or 'L')
+        from user input, and overwrite self.tile_set.
+        """
         valid_tile_set = False
         print('Would you like to use number or letter tiles?')
         while not valid_tile_set:
@@ -109,6 +131,9 @@ class Sudoku:
 
     def new_game(self) -> None:
         """
+        Initiate a new game, with size, zone size, number of
+        starting tiles, a tile set, an empty_board, a temp_board,
+        a solution_board, a starting_board, and a playing_board.
         """
         # Start with default values
         self.size = self.default_size
@@ -144,6 +169,10 @@ class Sudoku:
         self.play_game()
 
     def make_tile_set(self) -> List[Text]:
+        """
+        Make a set of tiles (letters or numbers)
+        that is the correct length (self.size).
+        """
         # Using alpha letters
         if self.tile_set.upper() == 'L':
             tiles_itr = string.ascii_uppercase
@@ -154,21 +183,35 @@ class Sudoku:
         return list(tiles_itr[:self.size])
 
     def print_solution_board(self) -> Text:
+        """
+        Print the solution board.
+        """
         return self.print_board(self.solution_board)
 
     def print_starting_board(self) -> Text:
+        """
+        Print the starting board.
+        """
         return self.print_board(self.starting_board)
 
     def print_playing_board(self) -> Text:
+        """
+        Print the playing board.
+        """
         return self.print_board(self.playing_board)
 
     def print_temp_board(self) -> Text:
+        """
+        Print the temp board.
+        """
         return self.print_board(self.temp_board)
 
     def print_board(self,
-                    board
+                    board: Board
                    ) -> Text:
-        """ To display a board """
+        """
+        Print a given board to the terminal.
+        """
         thick_vert = '|'
         thin_vert =  ':'
         thick_horz = '-----'
@@ -240,6 +283,7 @@ class Sudoku:
     def get_zone_order(self) -> List[Tuple[int, int]]:
         """
         Determine the order in which to search zones.
+        (Used with fill_board_by_zones, in progress)
         """
         order = []
         end = self.zone_size
@@ -258,8 +302,8 @@ class Sudoku:
 
     def fill_board_by_zones(self) -> bool:
         """
-        Attempting to fill the board in a 'smarter'
-        way, but not quite working.
+        Attempting to fill the board in a 'smarter' way,
+        but not working yet...
         """
         # (filling zones in linear order:)
         # for z_row in range(self.zone_size):
@@ -285,8 +329,11 @@ class Sudoku:
 
     def fill_board(self) -> Board:
         """
-        Fill the entire board with a valid solution.
-        uses self.temp_board
+        Fill the temp board with a valid solution.
+        Starts by filling two started zones, and then
+        calls solve_board() to recursively fill the remainder.
+        Required: Board to fill must be copied to self.temp_board
+                  before calling this function.
         """
         solvable = False
         while not solvable:
@@ -301,14 +348,16 @@ class Sudoku:
             # Fill (solve) the rest of the board
             solvable = self.solve_board()
 
-        # Board is solvable and filled
+        # Board is solvable and filled, return temp board
         return self.temp_board
 
     def fill_two_starter_zones(self) -> None:
         """
-        Start by filling two corner zones
-        (with no shared rows or columns).
-        Uses self.temp_board.
+        Fill the first two corner zones on temp board,
+        which have no shared rows or columns.
+        Called by fill_board().
+        Required: Board to fill must be copied to self.temp_board
+                  before calling this function.
         """
         # Fill top left zone on temp board
         start = 0
@@ -326,7 +375,9 @@ class Sudoku:
                          ) -> None:
         """
         Fill one of the two starter corner zones.
-        Uses self.temp_board.
+        Called by fill_two_starter_zones().
+        Required: Board to fill must be copied to self.temp_board
+                  before calling this function.
         """
         # Make a list of tiles, random shuffle
         tiles = list(copy.deepcopy(self.tiles))
@@ -346,11 +397,13 @@ class Sudoku:
                    col: int,
                   ) -> bool:
         """
-        Solve a single zone, return True if solvable,
-        else return False.
-        Note: Zone range is not inclusive, and end_row
-        and end_col not included in the current zone.
-        Uses self.temp_board.
+        Recursively solve a single zone in temp board,
+        return True if solvable, else return False.
+        (Called by fill_board_by_zone, still in progress.)
+        Note:     Zone range is not inclusive -- end_row and
+                  end_col are not included in the current zone.
+        Required: Board to solve must be copied to self.temp_board
+                  before calling this function.
         """
         # If end of row reached:
         if col == end_col:
@@ -382,10 +435,9 @@ class Sudoku:
                     col: int =0
                    ) -> bool:
         """
-        Recursive function to solve /fill board.
-        Uses self.temp_board.  (Copy the board
-        you want to solve into temp board first)
-        Returns True or False.
+        Recursive function to solve /fill the temp board.
+        Required: Board to solve must be copied to self.temp_board
+                  before calling this function.
         """
         # If end of board reached
         if row == self.size - 1 and col == self.size:
@@ -415,8 +467,10 @@ class Sudoku:
                              entry: Text =None
                             ) -> bool:
         """
-        Check if entry is valid.
-        Uses temp board.
+        Check if an entry in temp board is valid.
+        Note:  Uses self.temp_board, board being solved
+               /filled must be copied to self.temp_board
+               before calling this function.
         """
         # If not entering a new tile
         if entry is None:
@@ -445,8 +499,11 @@ class Sudoku:
                          how_many_start_tiles: int
                         ) -> Board:
         """
-        Remove tiles to make a starting puzzle board.
-        Check if solvable.
+        Remove tiles from copied solution board
+        to make a starting puzzle board.
+        Check if board solvable, and if solvable,
+        set playing_board_empties, and return board.
+        Required:  Solution board must already be created.
         """
         solvable = False
         while not solvable:
@@ -475,6 +532,11 @@ class Sudoku:
         return board
 
     def is_game_solved(self) -> bool:
+        """
+        Check if playing board is solved, by copying
+        playing board into temp board, and checking
+        if all entries are valid.
+        """
         # If there are multiple solutions, comparing to solution
         # board won't work, so need to check for solution
         self.temp_board = copy.deepcopy(self.playing_board)
@@ -487,6 +549,12 @@ class Sudoku:
         return True
 
     def play_game(self):
+        """
+        Play the game!
+        While game is not solved, let user input coords
+        and tiles, make valid moves, and once the board
+        is filled, check if board is solved.
+        """
         # print('New game!')
         # print('Enter \'RESET\' at any point to reset game to starting state.')
         # how would make reset opt?
@@ -514,6 +582,9 @@ class Sudoku:
             self.new_game()
 
     def get_row_col_input(self) -> Tuple[int, int]:
+        """
+        Get row and column input from the user.
+        """
         row = None
         col = None
         while not isinstance(row, int) or not row in range(self.size):
@@ -537,6 +608,10 @@ class Sudoku:
         return row, col
 
     def get_tile_input(self) -> Text:
+        """
+        Get tile (symbol) input from the user,
+        to insert a tile (symbol) into the selected cell.
+        """
         print('Please choose from these available values:')
         print('     ' + '  '.join(tile for tile in self.tiles))
         tile = input()
@@ -546,6 +621,10 @@ class Sudoku:
         return tile.upper()
 
     def take_move(self) -> None:
+        """
+        Take a move from a user by collecting input,
+        then call make_move() to make the move.
+        """
         row, col = self.get_row_col_input()
         # If a starting index
         while self.starting_board[row][col] is not None:
@@ -575,6 +654,10 @@ class Sudoku:
                   col: int,
                   tile: Text
                  ) -> None:
+        """
+        Make the given move by updating the playing
+        board and removing the index from the empties list.
+        """
         # Enter the selection onto board
         self.playing_board[row][col] = tile
         # Remove index from empties set
