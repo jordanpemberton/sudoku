@@ -21,7 +21,7 @@ By default, the "tiles" used are the numbers 1 through n^2, but players can also
 The number of starting tiles can be changed, as long the number of starting tiles is more than a required minimum, and less than the total number of cells.
 
 
-## How to Run:
+## How to Run
 
 Run this program with Python3.  This program will not run in Python2.
 
@@ -36,3 +36,8 @@ or, if on Windows,
 or, if Python3 is your default version of Python, simply
 
     python sudoku.py
+
+
+## Write-Up on NP-Completeness, Algorithms, Time Complexity
+
+https://github.com/jordanpemberton/sudoku_cs325/blob/master/sudoku_writeup.pdf
