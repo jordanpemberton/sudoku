@@ -1,4 +1,10 @@
 __pycache__/
 .pytype/
 .imports/
-geeks.py
+imports/
+.imports
+pyi/
+.pyi
+.ninja_deps
+.ninja_log
+.ninja
