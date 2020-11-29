@@ -38,6 +38,18 @@ or, if Python3 is your default version of Python, simply
     python sudoku.py
 
 
-## Write-Up on NP-Completeness, Algorithms, Time Complexity
+## How to Play
+
+Upon starting a game, you may choose to use the default game options, or you may customize your game by selecting a board size (4 x 4, 9 x 9, or 16 x 16), number of starting clue tiles, and tile set (numbers or letters).
+
+The game is played via the terminal.  Upon each move, you will be shown the board, and asked to enter a row, column, and tile to make a move.  Once you have filled the board, if the game is not yet solved, you can continue playing. If the game is solved, you can choose to begin a new game or exit.
+
+![Sudoku Screengrab](/docs/sudoku_screengrab.png)
+Format: ![Sudoku terminal game screengrab]()
+
+Happy solving!
+
+
+## Write-Up on NP-Completeness, Algorithms Used, & Time Complexity
 
 https://github.com/jordanpemberton/sudoku_cs325/blob/master/sudoku_writeup.pdf

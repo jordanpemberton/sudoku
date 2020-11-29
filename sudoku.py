@@ -1,13 +1,15 @@
 # (0) Allow user customization!
-# (1) Generate a full, solved board (save solution board)
-#       (a) Start by filling two opposite corner zones with shuffles tiles
+# (1) Generate a full, solved board (save as solution board)
+#       (a) Start by filling two opposite corner zones with shuffled tiles
 #       (b) Recursively fill the rest of the board, returning False if not valid
-# (2) Remove tiles until you have a puzzle board (save as puzzle starting board)
+# (2) Remove tiles until you have a puzzle board (save as starting board)
 # (3) Validate that the board is actually solveable (solve)
-# (4) Play! Let player input coords and tile vals to make moves
-#       (a) Verify if moves are valid (empty square or edit-able)
+# (4) Play! Let player input coords and symbols to make moves
+#       (a) Verify if moves are valid (empty or non-starting cells)
 #       (b) Check if board is full
 #       (c) Once full, check if board is solved (all entries are valid)
+#               *This version allows for multiple solutions, so must
+#               check if full board is solution
 
 
 from typing import Dict, List, Optional, Set, Text, Tuple, Union
@@ -37,7 +39,8 @@ class Sudoku:
         self.default_start_counts = {
                                      4 : 4,     # known min start
                                      9 : 17,    # known min start
-                                     16: 85     # unknown min start, smaller nums take longer
+                                     16: 85     # unknown min start
+                                                # (smaller nums take longer)
                                      # 25: 132  # unknown min start
                                     }
         self.new_game()
@@ -302,8 +305,8 @@ class Sudoku:
 
     def fill_board_by_zones(self) -> bool:
         """
-        Attempting to fill the board in a 'smarter' way,
-        but not working yet...
+        Attempting to fill the board in a 'smarter'
+        way, but does not work yet...
         """
         # (filling zones in linear order:)
         # for z_row in range(self.zone_size):
