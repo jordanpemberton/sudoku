@@ -142,10 +142,16 @@ class Sudoku:
         self.size = self.default_size
         self.how_many_start_tiles = self.default_start_counts[self.size]
         self.tile_set = self.default_tile_set
+
+        # Print the title for game
+        self.print_title()
+
         # Allow player to change defaults
         self.customize_new_game()
+
         # Make your set of tiles
         self.tiles = self.make_tile_set()
+
         # Determine correct zone size
         self.zone_size = self.valid_sizes[self.size]
 
@@ -258,7 +264,7 @@ class Sudoku:
                 if board[row][c] is not None:
                     tile = board[row][c]
                     # If a starting tile
-                    if self.solution_board[row][c] is not None:
+                    if self.starting_board[row][c] is not None:
                         out += (' ' +
                                 starting_tile_emp_left +
                                 tile +
@@ -282,6 +288,22 @@ class Sudoku:
         out += thick_vert + '\n'
         print(out)
         return out
+
+    def print_title(self) -> Text:
+        """
+        Print a title for a new game.
+        """
+        sp_6 = ' ' * 6
+        sp_7 = ' ' * 7
+        sp_23 = ' ' * 23
+        title = 'S U D O K U'
+        vert = '|'
+        horz = '_' * 23
+        print(sp_7 + horz)
+        print(sp_6 + vert + sp_23 + vert)
+        print(sp_6 + vert + sp_6 + title + sp_6 + vert)
+        print(sp_6 + vert + horz + vert)
+        print()
 
     def get_zone_order(self) -> List[Tuple[int, int]]:
         """
@@ -558,9 +580,7 @@ class Sudoku:
         and tiles, make valid moves, and once the board
         is filled, check if board is solved.
         """
-        # print('New game!')
-        # print('Enter \'RESET\' at any point to reset game to starting state.')
-        # how would make reset opt?
+        # (option to reset at any point?)
         solved = False
         while not solved:
             # Print the playing board

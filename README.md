@@ -21,11 +21,11 @@ By default, the "tiles" used are the numbers 1 through n<sup>2</sup>, but player
 The number of starting tiles can be changed, as long the number of starting tiles is more than a required minimum, and less than the total number of cells.
 
 
-## How to Run
+## How To Run
 
-Run this program with Python3.  This program will not run in Python2.
+Run this program with Python 3.  This program will not run in Python 2.
 
-Run this program by running the file `sudoku.py` via the command line however you normally run Python3 files, i.e.
+Run this program by running the file `sudoku.py` via the command line however you normally run Python 3 files, i.e.
 
     python3 sudoku.py
 
@@ -33,12 +33,12 @@ or, if on Windows,
 
     py -3 sudoku.py
 
-or, if Python3 is your default version of Python, simply
+or, if Python 3 is your default version of Python, simply
 
     python sudoku.py
 
 
-## How to Play
+## How To Play
 
 Upon starting a game, you may choose to use the default game options (9 x 9 board, 17 starting tiles, number tiles), or you may customize your game by selecting a board size (4 x 4, 9 x 9, or 16 x 16), number of starting clue tiles, and tile set (numbers or letters).
 
