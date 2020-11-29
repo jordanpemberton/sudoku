@@ -2,7 +2,7 @@
 
 ## Brief Description & Game Rules
 
-Sudoku is played on a grid of size n<sup>2</sup> x n<sup>2</sup>, that is subdivided into n<sup>2</sup> equal “zones”, each of size n x n.  A set of n<sup>2</sup> distinct symbols are used to fill these cells.  Initially, some cells on the board contain a symbol, and these starting "clue" cells cannot be altered.  Moves are made by inserting symbols into empty or non-starting cells.
+Sudoku is played on a grid of size n<sup>2</sup> x n<sup>2</sup>, that is subdivided into n<sup>2</sup> equal "zones", each of size n x n.  A set of n<sup>2</sup> distinct symbols are used to fill these cells.  Initially, some cells on the board contain a symbol, and these starting "clue" cells cannot be altered.  Moves are made by inserting symbols into empty or non-starting cells.
 
 To win, the entire board must filled, following these rules:
 
