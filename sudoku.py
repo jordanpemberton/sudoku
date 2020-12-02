@@ -289,7 +289,7 @@ class Sudoku:
         print(out)
         return out
 
-    def print_title(self) -> Text:
+    def print_title(self) -> None:
         """
         Print a title for a new game.
         """
