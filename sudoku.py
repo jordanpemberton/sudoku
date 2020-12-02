@@ -1,3 +1,8 @@
+"""
+Jordan Pemberton
+Sudoku
+"""
+
 # (0) Allow user customization!
 # (1) Generate a full, solved board (save as solution board)
 #       (a) Start by filling two opposite corner zones with shuffled tiles

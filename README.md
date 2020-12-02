@@ -52,3 +52,6 @@ Happy solving!
 ## Write-Up on NP-Completeness, Algorithms Used, & Time Complexity
 
 ![Sudoku Writeup](/docs/sudoku_writeup.pdf)
+
+
+#### Jordan Pemberton
