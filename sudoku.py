@@ -111,8 +111,8 @@ class Sudoku:
                   '.'
                  )
             if self.size == 16:
-                print('     Warning:  16 x 16 boards might be (very) slow to generate, but')
-                print('     boards with more starting tiles (>~130) should generate faster.')
+                print('     Warning:  16 x 16 boards might be slow to generate, but boards')
+                print('     with more starting tiles (>130) should generate faster.')
             how_many_start_tiles = input()
             try:
                 how_many_start_tiles = int(how_many_start_tiles)
@@ -236,7 +236,10 @@ class Sudoku:
         out = '     '
         # Column number labels
         for col in range(self.size):
-            out += '   ' + str(col) + '  '
+            if col > 9:
+                out += '  ' + str(col) + '  '
+            else:
+                out += '   ' + str(col) + '  '
         out += '\n'
         # Rows
         for row in range(self.size):
