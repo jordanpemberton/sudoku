@@ -29,23 +29,21 @@ The game is played via the terminal.  Upon each move, you will be shown the boar
 
 ### 4 x 4 Board
 
-![Sudoku Screengrab](/docs/sudoku_screengrab_4.png)
+![Sudoku Screengrab 4x4](/docs/sudoku_screengrab_4.png)
 
 
 ### 9 x 9 Board
 
-![Sudoku Screengrab](/docs/sudoku_screengrab_9.png)
-
-![Sudoku Screengrab](/docs/sudoku_screengrab_16a.png)
+![Sudoku Screengrab 9x9](/docs/sudoku_screengrab_9_L.png)
 
 
 ### 16 x 16 Board
 
-![Sudoku Screengrab](/docs/sudoku_screengrab_16b.png)
+![Sudoku Screengrab 16x16](/docs/sudoku_screengrab_16a.png)
+
+![Sudoku Screengrab 16x16](/docs/sudoku_screengrab_16b.png)
 
 
-
-Happy solving!
 
 
 
