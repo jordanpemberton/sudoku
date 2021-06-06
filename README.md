@@ -1,6 +1,6 @@
 # Sudoku
 
-This program generates, solves, and allows users to play Sudoku on boards of size 4 x 4, 9 x 9, or 16 x 16.  16 x 16 boards might be slow to generate, but 16 x 16 boards with more starting tiles (>130) should generate faster.
+This program generates, solves, and allows users to play Sudoku on boards of size 4 x 4, 9 x 9, or 16 x 16.
 
 The player can customize the size of their board, the number of starting tiles, and whether to use numbered or lettered tiles.
 
